@@ -231,7 +231,7 @@
                 // Tenta logar
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                     // Se falhar, tenta criar conta (Lógica simples para família)
                     try {
                         await createUserWithEmailAndPassword(auth, email, pass);
@@ -357,4 +357,5 @@
 
     </script>
 </body>
+
 </html>
