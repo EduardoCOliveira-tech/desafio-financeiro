@@ -231,15 +231,33 @@
                 // Tenta logar
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (error) {
-                if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                    // Se falhar, tenta criar conta (Lógica simples para família)
+                console.error("Erro no login:", error.code, error.message);
+                
+                // Lista de erros que indicam "usuário não existe" ou "senha errada"
+                // O 'auth/invalid-credential' é o novo padrão do Google
+                const errosDeConta = [
+                    'auth/user-not-found', 
+                    'auth/wrong-password', 
+                    'auth/invalid-credential'
+                ];
+
+                if(errosDeConta.includes(error.code)) {
+                    // Se falhar o login, tenta criar conta automaticamente
+                    msg.innerText = "Conta não encontrada. Criando nova...";
                     try {
                         await createUserWithEmailAndPassword(auth, email, pass);
+                        // Se der certo criar, o onAuthStateChanged vai logar sozinho
                     } catch (createError) {
-                        msg.innerText = "Erro: " + createError.message;
+                        // Se falhar ao criar (ex: senha fraca, email inválido)
+                        if(createError.code === 'auth/email-already-in-use') {
+                             msg.innerText = "Senha incorreta para este e-mail.";
+                        } else {
+                             msg.innerText = "Erro ao criar: " + createError.code;
+                        }
                     }
                 } else {
-                    msg.innerText = "Erro ao entrar. Verifique os dados.";
+                    // MOSTRA O ERRO REAL NA TELA PARA VOCÊ SABER O QUE É
+                    msg.innerText = "Erro técnico: " + error.code;
                 }
             }
         };
@@ -359,3 +377,4 @@
 </body>
 
 </html>
+
