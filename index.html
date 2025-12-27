@@ -223,44 +223,53 @@
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
             const msg = document.getElementById('auth-msg');
+            const btn = document.querySelector('.btn-main');
 
             if(pass.length < 6) { msg.innerText = "Senha deve ter 6+ dígitos"; return; }
 
-            msg.innerText = "Processando...";
+            // 1. Prepara visualmente (trava botão)
+            msg.innerText = "Verificando...";
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
             
             try {
-                // Tenta logar
+                // 2. Tenta fazer LOGIN
                 await signInWithEmailAndPassword(auth, email, pass);
+                // Se der certo, o onAuthStateChanged redireciona.
             } catch (error) {
-                console.error("Erro no login:", error.code, error.message);
-                
-                // Lista de erros que indicam "usuário não existe" ou "senha errada"
-                // O 'auth/invalid-credential' é o novo padrão do Google
-                const errosDeConta = [
+                console.log("Tentativa de login falhou (isso é normal se for conta nova):", error.code);
+
+                // LISTA DE ERROS QUE SIGNIFICAM "CONTA NÃO EXISTE"
+                const errosParaCriarConta = [
                     'auth/user-not-found', 
                     'auth/wrong-password', 
                     'auth/invalid-credential',
-                    'auth/invalid-login-credentials'  // <--- ADICIONE ESTA LINHA
+                    'auth/invalid-login-credentials' // <--- O erro que apareceu para você!
                 ];
 
-                if(errosDeConta.includes(error.code)) {
-                    // Se falhar o login, tenta criar conta automaticamente
-                    msg.innerText = "Conta não encontrada. Criando nova...";
+                // 3. Se for um desses erros, tentamos CRIAR a conta
+                if(errosParaCriarConta.includes(error.code)) {
+                    msg.innerText = "Conta nova detectada. Criando...";
                     try {
                         await createUserWithEmailAndPassword(auth, email, pass);
-                        // Se der certo criar, o onAuthStateChanged vai logar sozinho
+                        msg.innerText = "Conta criada com sucesso! Entrando...";
                     } catch (createError) {
-                        // Se falhar ao criar (ex: senha fraca, email inválido)
+                        console.error("Erro ao criar:", createError);
                         if(createError.code === 'auth/email-already-in-use') {
-                             msg.innerText = "Senha incorreta para este e-mail.";
+                             msg.innerText = "Este e-mail já existe, mas a senha está errada.";
                         } else {
-                             msg.innerText = "Erro ao criar: " + createError.code;
+                             msg.innerText = "Não foi possível criar a conta: " + createError.code;
                         }
                     }
+                } else if (error.code === 'auth/too-many-requests') {
+                    msg.innerText = "O Google bloqueou temporariamente por muitas tentativas. Tente outro e-mail ou aguarde.";
                 } else {
-                    // MOSTRA O ERRO REAL NA TELA PARA VOCÊ SABER O QUE É
-                    msg.innerText = "Erro técnico: " + error.code;
+                    msg.innerText = "Erro inesperado: " + error.code;
                 }
+            } finally {
+                // Destrava o botão
+                btn.disabled = false;
+                btn.style.opacity = "1";
             }
         };
 
@@ -379,6 +388,7 @@
 </body>
 
 </html>
+
 
 
 
