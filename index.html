@@ -239,7 +239,8 @@
                 const errosDeConta = [
                     'auth/user-not-found', 
                     'auth/wrong-password', 
-                    'auth/invalid-credential'
+                    'auth/invalid-credential',
+                    'auth/invalid-login-credentials'  // <--- ADICIONE ESTA LINHA
                 ];
 
                 if(errosDeConta.includes(error.code)) {
@@ -378,5 +379,6 @@
 </body>
 
 </html>
+
 
 
