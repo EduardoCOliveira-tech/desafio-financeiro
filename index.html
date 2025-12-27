@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio 200 | Meta Financeira</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- CONFIGURAÇÃO DE CORES (VARIÁVEIS) --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-sec: #6b7280;
+            --primary: #6366f1; /* Indigo */
+            --primary-hover: #4f46e5;
+            --accent: #10b981; /* Verde Sucesso */
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+
+        /* TEMA ESCURO */
+        [data-theme="dark"] {
+            --bg-color: #111827;
+            --card-bg: #1f2937;
+            --text-main: #f3f4f6;
+            --text-sec: #9ca3af;
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --border: #374151;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- CABEÇALHO --- */
+        header {
+            width: 100%;
+            background: var(--card-bg);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { font-weight: 800; font-size: 1.5rem; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .header-controls { display: flex; gap: 15px; align-items: center; }
+        
+        button.icon-btn {
+            background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-main);
+        }
+
+        /* --- TELAS (LOGIN vs APP) --- */
+        .screen { width: 100%; max-width: 900px; padding: 20px; display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- TELA DE LOGIN --- */
+        .auth-container {
+            max-width: 400px; margin: 50px auto; background: var(--card-bg);
+            padding: 40px; border-radius: 16px; box-shadow: var(--shadow); text-align: center;
+        }
+        
+        .auth-input {
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;
+            border: 1px solid var(--border); background: var(--bg-color); color: var(--text-main);
+        }
+        
+        .btn-main {
+            width: 100%; padding: 12px; background: var(--gradient); color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;
+        }
+        
+        .btn-main:hover { opacity: 0.9; transform: scale(0.99); }
+
+        /* --- APP PRINCIPAL --- */
+        .dashboard-card {
+            background: var(--card-bg); padding: 25px; border-radius: 16px;
+            box-shadow: var(--shadow); margin-bottom: 25px; text-align: center;
+        }
+
+        .progress-wrapper {
+            background: var(--bg-color); height: 20px; border-radius: 10px; overflow: hidden; margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%; background: var(--gradient); width: 0%; transition: width 0.5s ease;
+        }
+
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;
+        }
+        
+        .stat-box h3 { font-size: 0.9rem; color: var(--text-sec); font-weight: 400; }
+        .stat-box p { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+
+        /* --- GRID DOS QUADRADOS --- */
+        .grid-deposits {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px;
+        }
+
+        .deposit-item {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px 5px; text-align: center; cursor: pointer;
+            position: relative; overflow: hidden;
+        }
+
+        .deposit-item:hover { transform: translateY(-2px); border-color: var(--primary); }
+
+        .deposit-item.active {
+            background: var(--gradient); border-color: transparent; color: white;
+        }
+
+        .deposit-item span.idx { display: block; font-size: 0.65rem; opacity: 0.7; margin-bottom: 2px; }
+        .deposit-item strong { display: block; font-size: 0.85rem; }
+
+        /* Configuração Input */
+        .config-input-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .config-input-group input { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-color); color: var(--text-main); }
+        
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"><i class="fas fa-wallet"></i> Desafio 200</div>
+        <div class="header-controls">
+            <button class="icon-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="theme-icon"></i></button>
+            <button class="icon-btn" id="logoutBtn" style="display: none;" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </header>
+
+    <div id="auth-screen" class="screen active">
+        <div class="auth-container">
+            <h2>Bem-vindo</h2>
+            <p style="color: var(--text-sec); margin-bottom: 20px;">Faça login para salvar seu progresso</p>
+            <input type="email" id="email" placeholder="Seu e-mail" class="auth-input">
+            <input type="password" id="password" placeholder="Sua senha" class="auth-input">
+            <button class="btn-main" onclick="handleLogin()">Entrar / Criar Conta</button>
+            <p id="auth-msg" style="margin-top:10px; font-size: 0.9rem;"></p>
+        </div>
+    </div>
+
+    <div id="app-screen" class="screen">
+        
+        <div class="dashboard-card">
+            <div class="config-input-group">
+                <input type="number" id="goalInput" placeholder="Meta (Ex: 5000)">
+                <button class="btn-main" style="width: auto;" onclick="updateGoal()">Definir Meta</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3>Já Guardado</h3>
+                    <p id="displaySaved">R$ 0,00</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Falta</h3>
+                    <p id="displayRemaining">R$ 0,00</p>
+                </div>
+            </div>
+
+            <div class="progress-wrapper">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-sec);"><span id="percentText">0%</span> concluído</p>
+        </div>
+
+        <div class="grid-deposits" id="grid">
+            </div>
+    </div>
+
+    <script type="module">
+        // Importando Firebase do CDN (Versão Modular)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // --- CONFIGURAÇÃO (VOCÊ DEVE SUBSTITUIR AQUI) ---
+        // 1. Vá no console.firebase.google.com
+        // 2. Crie um projeto, adicione um App Web
+        // 3. Cole as chaves abaixo:
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVFoNy1AfGQPaWvM3JXp6mjv_d5TYAsJM",
+            authDomain: "projeto-de-juntar-dinheiro.firebaseapp.com",
+            projectId: "projeto-de-juntar-dinheiro",
+            storageBucket: "projeto-de-juntar-dinheiro.firebasestorage.app",
+            messagingSenderId: "1026029597098",
+            appId: "1:1026029597098:web:ceca9a61e512422ca17bd3",
+            measurementId: "G-VV0K9E1P1S"
+        };
+
+        // Inicializando Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userData = { goal: 20100, checks: [] };
+
+        // Elementos Globais
+        window.handleLogin = async () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            const msg = document.getElementById('auth-msg');
+
+            if(pass.length < 6) { msg.innerText = "Senha deve ter 6+ dígitos"; return; }
+
+            msg.innerText = "Processando...";
+            
+            try {
+                // Tenta logar
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (error) {
+                if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    // Se falhar, tenta criar conta (Lógica simples para família)
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, pass);
+                    } catch (createError) {
+                        msg.innerText = "Erro: " + createError.message;
+                    }
+                } else {
+                    msg.innerText = "Erro ao entrar. Verifique os dados.";
+                }
+            }
+        };
+
+        window.logout = () => signOut(auth);
+
+        // Monitorar Estado do Usuário
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-screen').classList.remove('active');
+                document.getElementById('app-screen').classList.add('active');
+                document.getElementById('logoutBtn').style.display = 'block';
+                loadUserData(user.uid);
+            } else {
+                currentUser = null;
+                document.getElementById('auth-screen').classList.add('active');
+                document.getElementById('app-screen').classList.remove('active');
+                document.getElementById('logoutBtn').style.display = 'none';
+            }
+        });
+
+        // --- LÓGICA DO DATABASE ---
+        function loadUserData(uid) {
+            const docRef = doc(db, "users", uid);
+            // Ouve mudanças em tempo real
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    userData = docSnap.data();
+                } else {
+                    // Cria dados padrão se for novo
+                    userData = { goal: 20100, checks: [] };
+                    saveToCloud();
+                }
+                renderApp();
+            });
+        }
+
+        async function saveToCloud() {
+            if(!currentUser) return;
+            await setDoc(doc(db, "users", currentUser.uid), userData);
+        }
+
+        // --- LÓGICA DA APLICAÇÃO (UI) ---
+        window.updateGoal = () => {
+            const val = parseFloat(document.getElementById('goalInput').value);
+            if(val > 0) {
+                userData.goal = val;
+                saveToCloud();
+                // O render acontece automático pelo onSnapshot, mas forçamos visualmente
+                renderApp(); 
+            }
+        }
+
+        function renderApp() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            document.getElementById('goalInput').value = userData.goal;
+
+            const baseSum = 20100;
+            const ratio = userData.goal / baseSum;
+            let currentTotal = 0;
+
+            for (let i = 1; i <= 200; i++) {
+                let val = i * ratio;
+                const isChecked = userData.checks.includes(i);
+                
+                if(isChecked) currentTotal += val;
+
+                const div = document.createElement('div');
+                div.className = `deposit-item ${isChecked ? 'active' : ''}`;
+                div.innerHTML = `<span class="idx">${i}</span><strong>${val.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</strong>`;
+                
+                div.onclick = () => {
+                    if(userData.checks.includes(i)) {
+                        userData.checks = userData.checks.filter(id => id !== i);
+                    } else {
+                        userData.checks.push(i);
+                    }
+                    saveToCloud(); // Salva e o snapshot atualiza a tela
+                };
+                
+                grid.appendChild(div);
+            }
+
+            // Atualiza Dashboard
+            const percent = (currentTotal / userData.goal) * 100;
+            document.getElementById('displaySaved').innerText = currentTotal.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            document.getElementById('displayRemaining').innerText = (userData.goal - currentTotal).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            document.getElementById('progressBar').style.width = `${Math.min(percent, 100)}%`;
+            document.getElementById('percentText').innerText = `${percent.toFixed(1)}%`;
+        }
+
+        // --- TEMA CLARO/ESCURO ---
+        window.toggleTheme = () => {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        };
+
+        // Carregar preferência de tema
+        if(localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-icon').className = 'fas fa-sun';
+        }
+
+    </script>
+</body>
+</html>
